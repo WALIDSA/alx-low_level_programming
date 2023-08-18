@@ -1,102 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "lists.h"
+/**
+ * create_dnode - creates new node
+ * @n: data of node
+ * @prev: link to prev node
+ * @next: link to next node
+ * Return: pointer to new node
+ */
+dlistint_t *create_dnode(int n, dlistint_t *prev, dlistint_t *next)
+{
+	dlistint_t *new;
 
-void add_in_middle(dlistint_t *node_at_choice_index, dlistint_t *new_node);
-void add_at_the_end(dlistint_t *node_b4_null, dlistint_t *new_node);
-dlistint_t *create_new_node(int n);
-
+	new = malloc(sizeof(dlistint_t));
+	if (new == NULL)
+		return (NULL);
+	new->n = n;
+	new->prev = prev;
+	new->next = next;
+	return (new);
+}
 /**
  * insert_dnodeint_at_index - inserts a new node at a given position
- * @h: double pointer to the head of the list
- * @idx: index of the list where the new node should be added
- * @n: elemenent of the new node to be added at @idx
- * Return: the address of the new node, or NULL if it failed
+ * @h: head of doubly-linked list
+ * @idx: index for insertion of new node
+ * @n: data for new node
+ * Return: address of new node or NULL if error
  */
-
-
 dlistint_t *insert_dnodeint_at_index(dlistint_t **h, unsigned int idx, int n)
 {
-	dlistint_t *current_node_at_the_index = NULL, *new_node, *c_node, *prev;
-	unsigned int i = 0;
+	dlistint_t *curr = *h, *localPrev = NULL;
+	unsigned int count = 0;
 
-	if (!(*h))
+	if (!h)
 		return (NULL);
-
-	if (idx == 0)
-		return (add_dnodeint(h, n));
-
-	c_node = *h;
-
-	while (c_node)
+	if (idx == 0) /* insert at list beginning*/
 	{
-		if (i == idx)
+		if (!*h)
+			*h = create_dnode(n, NULL, NULL); /*first node*/
+		else
 		{
-			current_node_at_the_index = c_node;
-			break;
+			(*h)->prev = create_dnode(n, NULL, *h);
+			*h = (*h)->prev;
 		}
-
-		prev = c_node;
-		c_node = c_node->next;
-		i++;
+		return (*h);
 	}
-
-	if (!current_node_at_the_index && (i != idx))
+	for (curr = *h; curr && (count < idx); curr = curr->next, count++)
+	{
+		localPrev = curr;
+	}
+	if ((count == idx) && (curr == NULL)) /*insert at list end*/
+	{
+		localPrev->next = create_dnode(n, localPrev, NULL);
+		return (localPrev->next);
+	}
+	if ((count < idx) && (curr == NULL))/*idx too high*/
 		return (NULL);
-
-	new_node = create_new_node(n);
-
-	if (!new_node)
-		return (NULL);
-
-	if (!current_node_at_the_index && (i == idx))
-		add_at_the_end(prev, new_node);
-	else
-		add_in_middle(current_node_at_the_index, new_node);
-
-	return (new_node);
-}
-
-/**
- * add_in_middle - adds a node in between nodes of dlistint_t list
- * @node_at_choice_index: pointer to the node at index of insertion
- * @new_node: pointer to new node
- */
-
-void add_in_middle(dlistint_t *node_at_choice_index, dlistint_t *new_node)
-{
-	new_node->prev = node_at_choice_index->prev;
-	new_node->next = node_at_choice_index;
-
-	(node_at_choice_index->prev)->next = new_node;
-	node_at_choice_index->prev = new_node;
-}
-
-/**
- * add_at_the_end - adds a node to end of dlistint_t list
- * @node_b4_null: pointer to node before end null node
- * @new_node: pointer to new node
- */
-
-void add_at_the_end(dlistint_t *node_b4_null, dlistint_t *new_node)
-{
-	node_b4_null->next = new_node;
-	new_node->prev = node_b4_null;
-	new_node->next = NULL;
-}
-
-/**
- * create_new_node - creates a new node for dlistint_t list
- * @n: elemenent of the new node
- * Return: pointer to a new node
- */
-
-dlistint_t *create_new_node(int n)
-{
-	dlistint_t *new_node = malloc(sizeof(dlistint_t));
-
-	if (!new_node)
-		return (NULL);
-
-	new_node->n = n;
-
-	return (new_node);
+	if (localPrev != NULL)
+	{       /*insert in middle of list*/
+		localPrev->next = create_dnode(n, localPrev, curr);
+		curr->prev = localPrev->next;
+		return (localPrev->next);
+	}
+	return (NULL); /*should never run*/
 }
